@@ -1,0 +1,286 @@
+---
+title: "More ggplot2: Facets, Geoms, Stats, Positioning and Coords"
+author: "ST537 Group 4"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(maps)
+```
+
+# 3.5 Facets
+## Paul
+
+Facets are subplots that each display one subset of the data. I'll use the following R code to illustrate the use of facets.
+
+For example:
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class, nrow = 2)
+```
+
+In the code above, facet_wrap() facets your plot by a single discrete variable, in this case, denoted by (~ class). Recall that the nrow = 2 just arranges the panels in 2 rows.
+
+facet_grid() is used if you want to plot on a combination of two variables. In this case, you're arguments are just two discrete variables separated by a formula sign, (rows ~ columns). To omit a facet in either the rows or columns, use . instead of a variable name, (. ~ cyl).
+
+For example:
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_grid(drv ~ cyl)
+```
+
+### 3.5.1 Exercises
+
+1. What happens if you facet on a continuous variable?
+
+ANSWER: R will treat each value as a discrete variable. If you have a dataset of n > 10 your graph may become unreadable or if you have a reasonably large dataset (n > 1000), your system may struggle to visualize the number of graphs.
+
+2. What do the empty cells in plot with facet_grid (drv ~ cyl) mean? How do they relate to this plot?
+
+ANSWER: We know that drv is the number of drives and cyl is the number of cylinders. The empty cells indicate the combinations of drv and cyl that don't exist. For instance, we see that in our dataset, four wheel drive vehicles don't come in 5 or 7 cylinder models.
+  
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = drv, y = cyl))
+  facet_grid (drv ~ cyl)
+```
+  
+3. What plots does the following code make? What does . do?
+
+ANSWER: The first is a graph with a facet wrap on rows drv, omitting the columns facet. The second is a graph with a facet wrap on columns, omitting the rows facet. Using the argument . in place of the rows or colums argument will omit that facet dimention.
+
+```{r}
+# graph 1
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv ~ .)
+
+# graph 2
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(. ~ cyl)
+```
+
+4. Take the first faceted plot in this section. What are the advantages to using faceting instead of the color aesthetic? What are the disadvantages? How might the balance change if you had a larger dataset?
+
+ANSWER: The advantages to using faceting instead of color aesthetic is the separation of the data in each class. Similar to jittering, it allows for a clearer visualization of the data by reducing overlapping information. Since the data are separate, drawing conclusions about shared patterns may be more difficult. A larger dataset, with the same number of classes, would likely benefit from faceting as they data would be even easier to read separated in this way than combined and color coded.
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class, nrow = 2)
+```
+5. Read ?facet_wrap. What does nrow do? What does ncol do? What other options control the layout of the individual panels? Why doesn’t facet_grid() have nrow and ncol arguments?
+
+ANSWER: nrow numerates the number of rows, ncol the number of columns. Some other options for layout control of individual panels include: as.table (table or plot), dir (fill rows first or columns first), strip.position (where the labels appear), switch (switches labels from top right to bottom left). facet_grid() uses the data structure to shape the plots, not layout preferences.
+
+6. When using facet_grid() you should usually put the variable with more unique levels in the columns. Why? It makes better use of the horizontal screen space. Most plots are wider than they are tall.
+
+# 3.6 Geometric objects
+## Matt
+
+```{r}
+## 1 ##
+## geom_line() , geom_boxplot() , geom_histogram() , 	geom_area() ##
+
+## 2 ##
+## displays highway mpg of vehicles with different displacements w/seperate trend lines
+## of 4wd, fwd, and rwd (smoothed) ##
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE)
+
+## 3 ##
+## helps hide a specific layer from being displayed. Without it that legend in the 
+## layer would be visible. ##
+
+## 4 ##
+## se adds a area around the line that is shaded, representing the standard error
+## with a 95% CI. ##
+
+## 5 ##
+## no these would not look different as they functionally do the same thing, just
+## present the code in two differing ways. ##
+
+## 6 ##
+## Graph 1##
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point() +
+  geom_smooth()
+
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point(color = "black") +
+  geom_smooth(aes(group = drv), color = "blue", se = FALSE)
+
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point() +
+  geom_smooth(se = FALSE)
+
+ggplot(mpg, aes(x = displ, y = hwy, color = drv)) +
+  geom_point() +
+  geom_smooth(color = "blue", se = FALSE)
+
+ggplot(mpg, aes(x = displ, y = hwy, color = drv, linetype = drv)) +
+  geom_point() +
+  geom_smooth(color = "blue", se = FALSE)
+
+ggplot(mpg, aes(x = displ, y = hwy, fill = drv)) +
+  geom_point(shape = 21, color = "white", size = 2) +
+  geom_smooth(aes(color = drv), se = FALSE)
+
+
+```
+
+# 3.7 Statistical transformations
+## John
+
+1.	What is the default geom associated with stat_summary()? How could you rewrite the previous plot to use that geom function instead of the stat function?
+
+The default geom associated with stat_summary() is a pointrange. You could rewrite the previous plot as follows:
+
+```{r}
+diamonds.df <- diamonds %>%
+  group_by(cut) %>%
+  summarize(
+    median_depth = median(depth),
+    min_depth = min(depth),
+    max_depth = max(depth)
+  )
+
+ggplot(diamonds.df, aes(x = cut, y = median_depth, ymin = min_depth, ymax = max_depth)) +
+  geom_pointrange()
+```
+
+2.	What does geom_col() do? How is it different to geom_bar()?
+
+Geom_bar() counts the number of observations in each category, and geom_col() provides the values; it just draws bars based on the values you give it.
+
+3.	Most geoms and stats come in pairs that are almost always used in concert. Read through the documentation and make a list of all the pairs. What do they have in common?
+
+The common thread through these is that stat_x() transforms the data, while geom_x() handles the visualization of the data. 
+
+4.	What variables does stat_smooth() compute? What parameters control its behavior?
+
+Stat_smooth() computes the variables x (predictor variable), y (response variable), ymin (lower bound of confidence interval), ymax (upper bound of confidence interval), and se (whether the confidence interval is shown). The parameters that control its behavior are method (smoothing method for the line), formula (a custom model formula), se (whether to show the confidence interval), level (confidence level), span (smoothing span for method = “loess”), fullrange (whether or not to extend the line to plot limits), and geom (whether to display as smooth, line, or ribbon). 
+
+5.	In our proportion bar chart, we need to set group = 1. Why? In other words, what is the problem with these two graphs?
+
+Without group = 1 in the first plot, ggplot treats cut as its own group, so the proportions were calculated within each bar but not across all bars. Similarly, in the second graph, the proportions are calculated within the fill group rather than across fill groups.
+
+
+# 3.8 Position adjustments
+## Miles
+
+1. Points are overlapping, meaning you cannot tell where clusters are.
+```{r}
+
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_jitter()
+
+```
+2. width and height
+
+3. geom_count() counts the number of points with the same value and displays them in the same location by scaling the point. geom_jitter() randomly moves each point by a small amount, removing point overlap.
+
+4. Stacking
+```{r}
+ggplot(mpg)+
+  geom_bar(aes(x = class, fill = trans))
+
+
+
+```
+
+# 3.9 Coordinate systems
+## Andrea
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+mpg |> 
+  ggplot(aes(class, hwy)) +
+  geom_boxplot()
+
+# flip x and y
+mpg |> 
+  ggplot(aes(class, hwy)) +
+  geom_boxplot() +
+  coord_flip()
+
+# graph the world
+world <- map_data("world")
+
+world |> 
+  ggplot(aes(long, lat,
+             group = group)) +
+  geom_polygon(fill = "steelblue", color = "black") 
+
+world |> 
+  ggplot(aes(long, lat,
+             group = group)) +
+  geom_polygon(fill = "steelblue", color = "black") +
+  coord_quickmap()    
+
+# pie graph
+bar <- diamonds |> 
+  ggplot() +
+  geom_bar(aes(cut,
+               fill = cut),
+           show.legend = FALSE,
+           width = 1) +
+  theme(aspect.ratio = 1) +
+  labs(x = NULL, 
+       y = NULL)
+
+bar + coord_flip()
+bar + coord_polar()
+```
+
+## 3.9.1 Exercises
+
+1.
+
+```{r}
+mpg |> 
+  ggplot() +
+  geom_bar(aes(x = manufacturer, 
+               fill = manufacturer),
+           show.legend = FALSE) +
+  coord_flip() 
+```
+
+2. labs() is used to modify axis, legend, and plot labels.
+
+3. coord_map() transforms a portion of the earth onto a flat 2D surface plane using projections within a package called mapproj. It does not preserve straight lines. coord_quickmap() works similarly, but does preserve straight lines and works best for small areas nearer to the equator.
+
+4. The plot shows that city and highway mpg are quite positively correlated. geom_abline() adds a line that has default values of an intercept of 0 and a slope of 1. coord_fixed() imposes a specified aspect ratio onto the graph with a default option of 1, rather than automatically determined aspect ratio. 
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() + 
+  geom_abline() +
+  coord_fixed(6/3)
+
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() +
+  geom_abline() +
+  coord_fixed() 
+```
+
+
+Hello!
+
