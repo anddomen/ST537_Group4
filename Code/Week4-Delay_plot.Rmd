@@ -14,6 +14,7 @@ knit: (function(inputFile, encoding) {
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(colorspace)
 ```
 
 ```{r}
@@ -26,46 +27,44 @@ delays$DayOfWeek <- factor(delays$DayOfWeek,
   levels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))
 
 # our plot for IAH
-iah <- subset(delays, Origin == "IAH")
-ggplot(iah, aes(DepHour, DayOfWeek)) +
-  geom_tile(aes(fill = prop_over_15)) 
-
-# but now there are also flights from HOU 
-hou <- subset(delays, Origin == "HOU") %>% 
-  filter(Origin == "HOU")
+# iah <- subset(delays, Origin == "IAH")
+# ggplot(iah, aes(DepHour, DayOfWeek)) +
+#   geom_tile(aes(fill = prop_over_15)) 
+# 
+# # but now there are also flights from HOU 
+# hou <- subset(delays, Origin == "HOU") %>% 
+#   filter(Origin == "HOU")
 ```
+
+
 
 
 ```{r}
-# Get all flight delay data
-## copied from get-delay-summary.R
-library(hflights)    # NOTE FROM ANDREA: typically not great to load libraries 
-                     # all the way down here, but I wanted to make it clear that 
-                     # this library isn't needed for the basic plot.
 
-hflights_df <- tbl_df(hflights)
+p=ggplot(delays, aes(x = DepHour, y = avg_delay/60, color = Origin)) +
+  geom_line(stat = "summary", fun = mean, linewidth = 0.9) +
+  labs(title = "To avoid delay, fly during the day!", 
+       y = "Average Delay (hours)",
+       caption = "Based on all departing flights from George Bush Intercontinental Airport (IAH) \nand William P. Hobby Airport (HOU) in 2011") +
+  theme_classic() +
+  scale_x_continuous("Departure time", 
+    breaks = c(0, 6, 12, 18, 24),
+    labels = c("Midnight", "6am", "Noon", "6pm", "Midnight"),
+    expand = c(0, 0),
+    limits = c(0, 23)) +
+  scale_color_manual(label = c("George Bush \nIntercontinental Airport (IAH)", "William P. Hobby Airport (HOU)"), values = c("#440154FF", "#22A884FF"))+
+  theme(legend.title = element_blank(),
+        legend.position = "inside",
+        plot.caption = element_text(hjust = 0))
 
-hflights_df <- mutate(hflights_df, 
-  DepHour = floor(DepTime/100),
-  DayOfWeek = factor(DayOfWeek, 
-    labels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))
-)
+# PNG version
+ggsave("flight_delays.png", plot = p, width = 8, height = 5, units = "in", dpi = 300, path = "../Outputs")
 
-day_hour <- group_by(hflights_df, Origin, DepHour, DayOfWeek)
-day_hour_sum <- summarise(day_hour, 
-  avg_delay = mean(DepDelay, na.rm = TRUE),
-  avg_delay_delayed = mean(DepDelay[DepDelay > 0], 
-    na.rm = TRUE),
-  prop_over_15 = mean(DepDelay > 15, na.rm = TRUE),
-  nflights  = n(),
-  ndests = n_distinct(Dest)
-)
-
-# write_csv(day_hour_sum, "all-summary.csv")
+# PDF version
+ggsave("flight_delays.pdf", plot = p, width = 8, height = 5, units = "in", dpi = 300, path = "../Outputs")
 ```
 
-# OUR GRAPH
-```{r}
 
-```
+
+
 
