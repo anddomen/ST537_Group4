@@ -72,6 +72,22 @@ budget <- tribble(
   "International Budget", 12000, 12600, 13860, 13200, 13860, 15246, 14520, 15246, 16771, 15972, 16771, 18448
 )
 
-# Graphing
+months <- paste(names(budget)[2:13])             # make vector of months
 
+df.budget.graph <- budget |> 
+  pivot_longer(cols      = months,               # widen data to consolidate months
+               names_to  = "Month", 
+               values_to = "Budget") |> 
+  separate(Expenses,                             # separate Expenses based on space
+           into = c("Nationality", "Spending"),
+           sep  = " ") |> 
+  pivot_wider(names_from   = Spending,           # widen to position budget amounts
+              values_from  = Budget) |> 
+  mutate(Variance          = Actual - Budget,    # calculate needed values
+         Percent_deviation = (Variance/Budget)*100,
+         Month             = factor(Month,       # factor month for easy graphing
+                                    levels = months)) 
+
+# Graphing
+df.budget.graph
 ```
