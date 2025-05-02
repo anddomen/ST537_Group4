@@ -97,7 +97,7 @@ ggplot(df.budget.graph, aes(x = Month, y = Variance, color = Nationality, group 
   geom_line(size = 1.2) +
   geom_point(size = 2) +
   scale_y_continuous(breaks = seq(-4000, 14000, by = 2000),
-  limits = c(-10000, 14000), # added the y range we wanted with addition of limits
+  limits = c(-4000, 14000), # added the y range we wanted with addition of limits
   labels = comma # from the scales package
   ) +
   geom_text(
@@ -106,11 +106,15 @@ ggplot(df.budget.graph, aes(x = Month, y = Variance, color = Nationality, group 
     hjust = -0.1,
     show.legend = FALSE
   ) +
-  geom_hline(
-    yintercept = 0,  # the horizontal line at y = 0
-    linetype = "dashed",  # dashed line style (optional)
-    # color = "black",  # line color (optional)
-    # size = 1  # line thickness (optional)
+  geom_segment(aes(x = 0, xend = 12, y = 0, yend = 0),
+           inherit.aes = FALSE,
+           linetype = "dashed",
+           size = 0.5
+  #geom_hline(
+  #  yintercept = 0,  # the horizontal line at y = 0
+  #  linetype = "dashed",  # dashed line style (optional)
+  #  # color = "black",  # line color (optional)
+  #  # size = 1  # line thickness (optional)
   ) +
   labs(
     title = "Expense Variance from Budget in U.S. Dollars",
@@ -119,7 +123,9 @@ ggplot(df.budget.graph, aes(x = Month, y = Variance, color = Nationality, group 
     color = "Nationality"
   ) +
   theme_classic() +
-  theme(legend.position = "none")
+  theme(legend.position = "none", 
+        plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm")) +
+  scale_x_discrete(expand = expansion(add = c(0.1, 3)))
   # Question for group: how might we add in space after December to display the labels?
 
 # Replication of Figure 9.9
@@ -138,11 +144,15 @@ ggplot(df.budget.graph, aes(x = Month, y = Percent_deviation, color = Nationalit
     hjust = -0.1,
     show.legend = FALSE
   ) +
-  geom_hline(
-    yintercept = 0,  # the horizontal line at y = 0
-    linetype = "dashed",  # dashed line style (optional)
-    # color = "black",  # line color (optional)
-    # size = 1  # line thickness (optional)
+  geom_segment(aes(x = 0, xend = 12, y = 0, yend = 0),
+             inherit.aes = FALSE,
+             linetype = "dashed",
+             size = 0.5
+  #geom_hline(
+  #  yintercept = 0,  # the horizontal line at y = 0
+  #  linetype = "dashed",  # dashed line style (optional)
+  #  # color = "black",  # line color (optional)
+  #  # size = 1  # line thickness (optional)
   ) +
   labs(
     title = "Percentage Variance of Expenses from Budget Budget",
@@ -151,6 +161,8 @@ ggplot(df.budget.graph, aes(x = Month, y = Percent_deviation, color = Nationalit
     color = "Nationality"
   ) +
   theme_classic() +
-  theme(legend.position = "none")
+  theme(legend.position = "none", 
+        plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm")) +
+  scale_x_discrete(expand = expansion(add = c(0.1, 3)))
   # theme(plot.margin = unit(c(0, 5, 0, 0), "cm")) # added margins to view labels - this didn't work but we left it in
 ```
