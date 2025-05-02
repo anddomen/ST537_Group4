@@ -67,7 +67,10 @@ volcano_long <- volcano_tbl %>%
   ) %>%
   select(x, y, z)
 # Graphing
+filled.contour(volcano, color.palette = terrain.colors, asp = 1)
 
+ggplot(volcano_long, aes(x = x, y = y, z = z)) +
+  geom_contour_filled()
 ```
 
 
