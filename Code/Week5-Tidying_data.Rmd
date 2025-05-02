@@ -67,10 +67,12 @@ volcano_long <- volcano_tbl %>%
   ) %>%
   select(x, y, z)
 # Graphing
-filled.contour(volcano, color.palette = terrain.colors, asp = 1)
+library(colorspace)
 
 ggplot(volcano_long, aes(x = x, y = y, z = z)) +
-  geom_contour_filled()
+  geom_raster(aes(fill = z)) +
+  scale_fill_continuous_sequential("Terrain", rev = F, name = "Meters") +
+  theme_bw()
 ```
 
 
