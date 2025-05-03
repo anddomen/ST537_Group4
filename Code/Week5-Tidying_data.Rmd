@@ -55,8 +55,24 @@ volcano_tbl <- as_tibble(volcano)
 colnames(volcano_tbl) <- 1:ncol(volcano) 
 volcano_tbl$row <- 1:nrow(volcano_tbl)
 
+volcano_long <- volcano_tbl %>%
+  pivot_longer(
+    cols = -row,
+    names_to = "x",
+    values_to = "z"
+  ) %>%
+  mutate(
+    x = as.integer(x),
+    y = row
+  ) %>%
+  select(x, y, z)
 # Graphing
+library(colorspace)
 
+ggplot(volcano_long, aes(x = x, y = y, z = z)) +
+  geom_raster(aes(fill = z)) +
+  scale_fill_continuous_sequential("Terrain", rev = F, name = "Meters") +
+  theme_bw()
 ```
 
 
