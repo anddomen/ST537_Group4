@@ -12,7 +12,7 @@ knit: (function(inputFile, encoding) {
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)   # Changed global markdown options to echo = FALSE
+knitr::opts_chunk$set(echo = TRUE)   # Changed global markdown options to echo = TRUE
 library(tidyverse)
 ```
 
@@ -63,6 +63,9 @@ volcano_tbl$row <- 1:nrow(volcano_tbl)
 # Few's Deviation Analysis
 
 ```{r}
+# use the scales package
+library(scales)
+
 # Data wrangling
 budget <- tribble(
   ~ Expenses,             ~ Jan, ~ Feb, ~ Mar, ~ Apr, ~ May, ~ Jun, ~ Jul, ~ Aug, ~ Sep, ~ Oct, ~ Nov, ~ Dec,
@@ -72,6 +75,94 @@ budget <- tribble(
   "International Budget", 12000, 12600, 13860, 13200, 13860, 15246, 14520, 15246, 16771, 15972, 16771, 18448
 )
 
-# Graphing
+months <- paste(names(budget)[2:13])             # make vector of months
 
+df.budget.graph <- budget |> 
+  pivot_longer(cols      = months,               # widen data to consolidate months
+               names_to  = "Month", 
+               values_to = "Budget") |> 
+  separate(Expenses,                             # separate Expenses based on space
+           into = c("Nationality", "Spending"),
+           sep  = " ") |> 
+  pivot_wider(names_from   = Spending,           # widen to position budget amounts
+              values_from  = Budget) |> 
+  mutate(Variance          = Actual - Budget,    # calculate needed values
+         Percent_deviation = (Variance/Budget), # modified this so we could display the % sign easily in the graph
+         Month             = factor(Month,       # factor month for easy graphing
+                                    levels = months)) 
+
+# Graphing
+# Replication of Figure 9.8
+ggplot(df.budget.graph, aes(x = Month, y = Variance, color = Nationality, group = Nationality)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(-4000, 14000, by = 2000),
+  limits = c(-4000, 14000), # added the y range we wanted with addition of limits
+  labels = comma # from the scales package
+  ) +
+  geom_text(
+    data = subset(df.budget.graph, Month == "Dec"),
+    aes(label = Nationality),
+    hjust = -0.1,
+    show.legend = FALSE
+  ) +
+  geom_segment(aes(x = 0, xend = 12, y = 0, yend = 0),
+           inherit.aes = FALSE,
+           linetype = "dashed",
+           size = 0.5
+  #geom_hline(
+  #  yintercept = 0,  # the horizontal line at y = 0
+  #  linetype = "dashed",  # dashed line style (optional)
+  #  # color = "black",  # line color (optional)
+  #  # size = 1  # line thickness (optional)
+  ) +
+  labs(
+    title = "Expense Variance from Budget in U.S. Dollars",
+    x = "Month",
+    y = "",
+    color = "Nationality"
+  ) +
+  theme_classic() +
+  theme(legend.position = "none", 
+        plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm")) +
+  scale_x_discrete(expand = expansion(add = c(0.1, 3)))
+  # Question for group: how might we add in space after December to display the labels?
+
+# Replication of Figure 9.9
+ggplot(df.budget.graph, aes(x = Month, y = Percent_deviation, color = Nationality, group = Nationality)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 2) +
+  # xlim(NA, Dec) - attempting to use xlim to add more white space to the x axis
+  scale_y_continuous(
+    breaks = seq(-0.20, 0.25, by = 0.05), # numeric breaks
+    limits = c(-0.20, 0.25), # added the y range we wanted with addition of limits
+    labels = scales::percent # numbers to percentages
+  ) +
+  geom_text(
+    data = subset(df.budget.graph, Month == "Dec"),
+    aes(label = Nationality),
+    hjust = -0.1,
+    show.legend = FALSE
+  ) +
+  geom_segment(aes(x = 0, xend = 12, y = 0, yend = 0),
+             inherit.aes = FALSE,
+             linetype = "dashed",
+             size = 0.5
+  #geom_hline(
+  #  yintercept = 0,  # the horizontal line at y = 0
+  #  linetype = "dashed",  # dashed line style (optional)
+  #  # color = "black",  # line color (optional)
+  #  # size = 1  # line thickness (optional)
+  ) +
+  labs(
+    title = "Percentage Variance of Expenses from Budget Budget",
+    x = "Month",
+    y = "",
+    color = "Nationality"
+  ) +
+  theme_classic() +
+  theme(legend.position = "none", 
+        plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm")) +
+  scale_x_discrete(expand = expansion(add = c(0.1, 3)))
+  # theme(plot.margin = unit(c(0, 5, 0, 0), "cm")) # added margins to view labels - this didn't work but we left it in
 ```
