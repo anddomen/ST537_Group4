@@ -1,0 +1,39 @@
+---
+title: "Revealing Change"
+author: "Group 4"
+date: "`r Sys.Date()`"
+output: pdf_document
+# following knit options outputs knitted file into Outputs folder
+knit: (function(inputFile, encoding) {
+      out_dir <- "../Outputs";
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_dir=file.path(dirname(inputFile), out_dir))})
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Decomposiing a time series
+## Summary of the manipulation
+
+## Types of patterns this manipulation makes easier for a viewer
+
+## Example of graphic from beyond the book
+
+
+# Using a single index
+## Summary of the manipulation
+
+## Types of patterns this manipulation makes easier for a viewer
+
+## Example of graphic from beyond the book
+
+
+# Using a rate of change
+## Summary of the manipulation
+
+## Types of patterns this manipulation makes easier for a viewer
+
+## Example of graphic from beyond the book
