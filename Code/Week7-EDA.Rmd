@@ -1,0 +1,46 @@
+---
+title: "EDA Techniques"
+author: "Group 4"
+date: '`r Sys.Date()`'
+output: pdf_document
+# following knit options outputs knitted file into Outputs folder
+knit: (function(inputFile, encoding) {
+      out_dir <- "../Outputs";
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_dir=file.path(dirname(inputFile), out_dir))})
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Paul
+```{r}
+
+```
+
+
+# Matthew
+```{r}
+
+```
+
+
+# Miles
+```{r}
+
+```
+
+
+# John
+```{r}
+
+```
+
+
+# Andrea
+```{r}
+
+```
+
