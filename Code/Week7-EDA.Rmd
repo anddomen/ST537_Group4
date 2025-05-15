@@ -16,9 +16,45 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Paul
-```{r}
 
+The remaining sections (Introduction, Questions, ggplot calls, and Learning more) are narrative in nature. We include their summaries here for completeness, to retain a simple reference, and for the equal division of group work.
+
+(7.1) A note on Exploratory Data Analysis (EDA): EDA is a state of mind, feel free to explore all of the ideas that come to you whether they pan out or not. Scrubbing is just one important part, ensuring the data is in the right form for your analysis--using visualization, transformation, and modeling.
+
+EDA workflow: question %>% visualize, transform, model %>% refine your questions and generate new ones.
+
+We'll be using dplyr and ggplot2 in the tidyverse.
+```{r}
+library(tidyverse)
 ```
+
+(7.2) Creatively understand your data. Generate many questions and select the right one. In Lean Six Sigma, we call this process, the 5 W's. Continue to ask an additional question based on the answer to your last question, until you reach the 5th, at which point you can begin to make relevant discoveries. Here the questions are about variation, and covariation. (Know these terms: variable, value, observation, Tabular data, tidy tabular is when cell = value, column = variable, row = observation).
+
+(7.7) A concise expression of ggplot2 code will be used going forward.
+
+Old form:
+ggplot(data = turnaround, mapping = aes(x = turn3, y = brighteyes)) + 
+  geom_barplot(binwidth = 0.25)
+  
+New form:
+ggplot(turnaround, aes(turn3, brighteyes)) + 
+  geom_barplot(binwidth = 0.25)
+
+A reminder on adding a ggplot to the end of a pipeline:
+diamonds %>% 
+  count(are, fornever) %>% 
+  ggplot(aes(fornever, are, fill = n)) + # note the move to + after ggplot starts--at least until ggvis is released!
+    geom_tile()
+    
+(7.8)
+R for graphics cookbook (updated by Winston Change 2025-05-15)
+https://r-graphics.org/
+
+ggplot2 book: 3rd edition
+https://ggplot2-book.org/
+
+Springer link
+https://link.springer.com/book/10.1007/978-3-319-24277-4
 
 
 # Matthew
