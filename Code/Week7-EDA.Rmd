@@ -22,7 +22,22 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 # Matthew
+
+library(ggplot2)
 ```{r}
+ggplot(diamonds, aes(x = y)) + 
+  geom_histogram(binwidth = 0.5)
+
+# while the graph as is shows the general distribution and trends as a whole, but the far right tail values are essentially illegible
+# due to their small value overall. Adding in cood_cartesian() funcion allows you to zoom in on this specific difficult to see range.
+# It's also very useful when you want to see a specific range without distorting the overall data and keeping the axis scaling consistent.
+
+ggplot(diamonds, aes(x = y)) + 
+  geom_histogram(binwidth = 0.5) +
+  coord_cartesian(ylim = c(0, 50))
+
+# Here you can see it is used to zoom in on the bars that have less than 50, without removing the other bars.
+# Ideally you will want to use this to view a specific subset of data among a larger dataset that is difficult to visualize within the base graphic
 
 ```
 
