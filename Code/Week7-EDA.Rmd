@@ -15,73 +15,50 @@ knit: (function(inputFile, encoding) {
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(modelr)
-
-
 ```
 
-# Paul
+# 7.1 - Introduction
 
-The remaining sections (Introduction, Questions, ggplot calls, and Learning more) are narrative in nature. We include their summaries here for completeness, to retain a simple reference, and for the equal division of group work.
+## Paul
 
-(7.1) A note on Exploratory Data Analysis (EDA): EDA is a state of mind, feel free to explore all of the ideas that come to you whether they pan out or not. Scrubbing is just one important part, ensuring the data is in the right form for your analysis--using visualization, transformation, and modeling.
+### Note: 
+*The sections (Introduction, Questions, ggplot calls, and Learning more) are narrative in nature. We include their summaries here for completeness, to retain a simple reference, and for the equal division of group work.*
+
+A note on Exploratory Data Analysis (EDA): EDA is a state of mind, feel free to explore all of the ideas that come to you whether they pan out or not. Scrubbing is just one important part, ensuring the data is in the right form for your analysis--using visualization, transformation, and modeling.
 
 EDA workflow: question %>% visualize, transform, model %>% refine your questions and generate new ones.
 
 We'll be using dplyr and ggplot2 in the tidyverse.
-```{r}
-library(tidyverse)
-```
 
-(7.2) Creatively understand your data. Generate many questions and select the right one. In Lean Six Sigma, we call this process, the 5 W's. Continue to ask an additional question based on the answer to your last question, until you reach the 5th, at which point you can begin to make relevant discoveries. Here the questions are about variation, and covariation. (Know these terms: variable, value, observation, Tabular data, tidy tabular is when cell = value, column = variable, row = observation).
+# 7.2 - Questions
 
-(7.7) A concise expression of ggplot2 code will be used going forward.
+## Paul
 
-Old form:
-ggplot(data = turnaround, mapping = aes(x = turn3, y = brighteyes)) + 
-  geom_barplot(binwidth = 0.25)
-  
-New form:
-ggplot(turnaround, aes(turn3, brighteyes)) + 
-  geom_barplot(binwidth = 0.25)
 
-A reminder on adding a ggplot to the end of a pipeline:
-diamonds %>% 
-  count(are, fornever) %>% 
-  ggplot(aes(fornever, are, fill = n)) + # note the move to + after ggplot starts--at least until ggvis is released!
-    geom_tile()
-    
-(7.8)
-R for graphics cookbook (updated by Winston Change 2025-05-15)
-https://r-graphics.org/
-
-ggplot2 book: 3rd edition
-https://ggplot2-book.org/
-
-Springer link
-https://link.springer.com/book/10.1007/978-3-319-24277-4
+Creatively understand your data. Generate many questions and select the right one. In Lean Six Sigma, we call this process, the 5 W's. Continue to ask an additional question based on the answer to your last question, until you reach the 5th, at which point you can begin to make relevant discoveries. Here the questions are about variation, and covariation. (Know these terms: variable, value, observation, Tabular data, tidy tabular is when cell = value, column = variable, row = observation).
 
 
 
 
-# Matthew
+# 7.3 - Variation
+## Matthew
 
-library(ggplot2)
+
 ```{r}
 ggplot(diamonds, aes(x = y)) + 
   geom_histogram(binwidth = 0.5)
+```
+While the graph as is shows the general distribution and trends as a whole, but the far right tail values are essentially illegible due to their small value overall. Adding in cood_cartesian() funcion allows you to zoom in on this specific difficult to see range.
 
-# while the graph as is shows the general distribution and trends as a whole, but the far right tail values are essentially illegible
-# due to their small value overall. Adding in cood_cartesian() funcion allows you to zoom in on this specific difficult to see range.
-# It's also very useful when you want to see a specific range without distorting the overall data and keeping the axis scaling consistent.
+It's also very useful when you want to see a specific range without distorting the overall data and keeping the axis scaling consistent.
 
+```{r}
 ggplot(diamonds, aes(x = y)) + 
   geom_histogram(binwidth = 0.5) +
   coord_cartesian(ylim = c(0, 50))
-
-# Here you can see it is used to zoom in on the bars that have less than 50, without removing the other bars.
-# Ideally you will want to use this to view a specific subset of data among a larger dataset that is difficult to visualize within the base graphic
-
 ```
+
+Here you can see it is used to zoom in on the bars that have less than 50, without removing the other bars. Ideally you will want to use this to view a specific subset of data among a larger dataset that is difficult to visualize within the base graphic
 
 
 # 7.4 - Missing Values 
@@ -100,13 +77,15 @@ The other option is to replace the individual problem values with NAs. This is m
 ```{r replace missing value}
 diamonds2 <- diamonds %>% 
   mutate(y = ifelse(y < 3 | y > 20, NA, y))
-
 ```
 
 The three arguments of ifelse() are 1. the logical condition, 2. the value when the condition is true, and 3. the value when the condition is false. For more complex combinations of existing variables, case_when() is a better option. For example, I used it to create bins of years when I was plotting the baseball data in Assignments 1 and 2:
 
 ```{r case_when() example}
-#install.packages("Lahman")
+if (!requireNamespace("Lahman", quietly = TRUE)) {
+  install.packages("Lahman")
+}
+
 library(Lahman)
 
 # Binning years 
@@ -145,33 +124,36 @@ nycflights13::flights %>%
 
 ```
 
-# John
+# 7.5 - Covariation
+## John
+Covariation is when two or more variables have similar variations. It describes behavior between two or more variables. 
+
+It is important to recognize covariation between variables while performing EDA in order to explore the relationships between the variables, and identify trends and patterns. 
+
+The way you can recognize covariation is by plotting the relationship between these variables. This can be done between a continuous and categorical variable, two continuous variables, or two categorical variables.
+
+For a categorical and continuous variable, the best way to display covariation is through plotting boxplots. In the graph below, you can see that the diamonds that are "fair" in quality actually have the highest price, and the best quality diamonds are less expensive.
+
 ```{r}
-# library(tidyverse)
-# Covariation is when two or more variables have similar variations. It describes behavior between two or more variables. 
-# It is important to recognize covariation between variables while performing EDA in order to explore the relationships between the variables, and identify trends and patterns. 
-# The way you can recognize covariation is by plotting the relationship between these variables. This can be done between a continuous and categorical variable, two continuous variables, or two categorical variables.
-
-# For a categorical and continuous variable, the best way to display covariation is through plotting boxplots. In the graph below, you can see that the diamonds that are "fair" in quality actually have the highest price, and the best quality diamonds are less expensive.
-
 ggplot(data = diamonds, mapping = aes(x = cut, y = price)) +
   geom_boxplot()
 ```
-```{r}
-# For two categorical variables, you have to count the observations between the two variables, and plot the counts. 
 
+For two categorical variables, you have to count the observations between the two variables, and plot the counts. 
+```{r}
 ggplot(data = diamonds) +
   geom_count(mapping = aes(x = cut, y = color))
 ```
-```{r}
-# And for two continuous variables, a scatterplot or bin plot will show you the relationships between the variables.
 
+And for two continuous variables, a scatterplot or bin plot will show you the relationships between the variables.
+
+```{r}
 ggplot(data = diamonds) +
   geom_bin2d(mapping = aes(x = carat, y = price))
-
-# All of these techniques help you visualize the relationships between variables, and help in identifying covariation.
-
 ```
+
+All of these techniques help you visualize the relationships between variables, and help in identifying covariation.
+
 
 # 7.6 Patterns and models
 ## Andrea
@@ -204,7 +186,7 @@ kefir.raw |>
              y = Weight_g))+
   geom_point()
 ```
-The scatterplot here is a helpful beginning graph as a pattern can be seen here, without adding comnplexity of additional variables. This graph shows the mass of the grains increasing over time. This is to be expected. However, it does show that as the number of passages is increasing, there is a certain divergence and increase in variability. When we add the fact that some of the milk wasn't bovine based, but there was coconut milk and coconut milk with 5% lactose (a similar lactose content to whole cow's milk).
+The scatterplot here is a helpful beginning graph as a pattern can be seen here, without adding complexity of additional variables. This graph shows the mass of the grains increasing over time. This is to be expected. However, it does show that as the number of passages is increasing, there is a certain divergence and increase in variability. When we add the fact that some of the milk wasn't bovine based, but there was coconut milk and coconut milk with 5% lactose (a similar lactose content to whole cow's milk).
 
 ```{r}
 kefir.milk <- kefir.raw |> 
@@ -260,3 +242,36 @@ kefir.resid |>
   geom_boxplot()
 ```
 ... Okay the residuals could be nicer, but it's also real world data so this isn't terrible. This plot helps to compare the means and variability across the different milk types.
+
+# 7.7 - New ggplot2 syntax
+
+## Paul
+
+A concise expression of ggplot2 code will be used going forward.
+
+Old form:
+ggplot(data = turnaround, mapping = aes(x = turn3, y = brighteyes)) + 
+  geom_barplot(binwidth = 0.25)
+  
+New form:
+ggplot(turnaround, aes(turn3, brighteyes)) + 
+  geom_barplot(binwidth = 0.25)
+
+A reminder on adding a ggplot to the end of a pipeline:
+diamonds %>% 
+  count(are, fornever) %>% 
+  ggplot(aes(fornever, are, fill = n)) + # note the move to + after ggplot starts--at least until ggvis is released!
+    geom_tile()
+    
+# 7.8 - Additional Resources
+## Paul
+
+R for graphics cookbook (updated by Winston Change 2025-05-15)
+https://r-graphics.org/
+
+ggplot2 book: 3rd edition
+https://ggplot2-book.org/
+
+Springer link
+https://link.springer.com/book/10.1007/978-3-319-24277-4
+
