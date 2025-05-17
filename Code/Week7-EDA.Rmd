@@ -13,6 +13,8 @@ knit: (function(inputFile, encoding) {
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(modelr)
 ```
 
 # Paul
@@ -38,9 +40,90 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
+# 7.6 Patterns and models
+## Andrea
+People are really good at finding patterns, whether the truly exist or not. Finding patterns in data is an important part of research and can reveal previously unknown relationships, even ones that were not explicitly tested for.
 
-# Andrea
+If a pattern is found, some questions should be asked:
+- How strong is the effect?
+- What variables influence the pattern?
+- Is it actually random chance?
+
+Fitting a model can help answer these questions. For example, here's some data from an experiment I did with making Kefir, a fermented milk beverage. We started with 5 grams of grains in jars and "fed" them with milk. Every 48 hours we changed out the milk and weighed the grains.
 ```{r}
+colors <- c("#F80C66", "#1F7F80", "#40037F", "#AA66FF", "#66CCFE")
 
+kefir.url <- "https://raw.githubusercontent.com/anddomen/Sourching_data_ST537/refs/heads/main/Data/Kefir_exp_data.csv"
+
+kefir.raw <- read.csv(kefir.url) |> 
+  filter(!is.na(Weight_g)) |> 
+  mutate(Date = as.Date(Date, format = "%m/%d/%y"),
+         Day = as.numeric(Date - min(Date)),
+         Passages  = case_match(Day,
+                                0 ~ 0,
+                                2 ~ 1,
+                                4 ~ 2,
+                                6 ~ 3,
+                                8 ~ 4))
+
+kefir.raw |> 
+  ggplot(aes(x = Passages,
+             y = Weight_g))+
+  geom_point()
+```
+The scatterplot here is a helpful begining graph as a pattern can be seen here, without adding comnplexity of additional variables. This graph shows the mass of the grains increasing over time. This is to be expected. However, it does show that as the number of passages is increasing, there is a certain divergence and increase in variability. When we add the fact that some of the milk wasn't bovine based, but there was coconut milk and coconut milk with 5% lactose (a similar lactose content to whole cow's milk).
+
+```{r}
+kefir.milk <- kefir.raw |> 
+  filter(!is.na(Passages)) |> 
+  mutate(Milk = case_when(
+    grepl("^COW", Sample)  == TRUE ~ "Cow",
+    grepl("^CCO", Sample)  == TRUE ~ "Coconut",
+    grepl("^CLA", Sample)  == TRUE ~ "Coconut + 5% lactose",
+    grepl("^GOAT", Sample) == TRUE ~ "Commercial goat",
+    grepl("^LIFE", Sample) == TRUE ~ "Commercial cow"),
+    Milk = factor(Milk, 
+                  levels = c("Cow", "Coconut", "Coconut + 5% lactose")))
+
+kefir.milk |> 
+  ggplot(aes(x = Passages,
+             y = Weight_g,
+             color = Milk))+
+  geom_point() +
+  theme_classic()+
+  scale_color_manual(values = colors)
 ```
 
+Now things are starting to make sense. The pattern here seems to be that cow and lactose-supplemented coconut milk have similar weights at the end of 4 passages while regular coconut milk lags behind. If we clean up the graph a bit more, the pattern is even clearer.
+```{r}
+kefir.milk |> 
+  group_by(Milk, Passages) |> 
+  summarize(mean_wt = mean(Weight_g),
+            stdev   = sd(Weight_g)) |> 
+  ggplot(aes(x = Passages,
+             y = mean_wt,
+             color = Milk)) +
+  geom_line(linewidth = 0.75) +
+  geom_errorbar(aes(ymin = mean_wt - stdev,
+                    ymax = mean_wt + stdev), width = 0.2)+
+  geom_point()+
+  theme_classic() +
+  labs(x = "Number of passages",
+       y = "Average weight (g)") +
+  scale_color_manual(values = colors) 
+```
+And when we fit a model to this data, it also shows that coconut milk was significantly different than the others, particularly on the last day. 
+
+```{r}
+milk.mod <- lm(Weight_g ~ Milk + factor(Passages), kefir.milk)
+summary(milk.mod)
+
+kefir.resid <- kefir.milk |> 
+  add_residuals(milk.mod)
+
+kefir.resid |> 
+  ggplot(aes(x = Milk,
+             y = resid)) +
+  geom_boxplot()
+```
+... Okay the residuals could be nicer, but it's also real world data so this isn't terrible. This plot helps to compare the means and variability across the different milk types.
