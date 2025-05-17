@@ -15,25 +15,135 @@ knit: (function(inputFile, encoding) {
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(modelr)
+
+
 ```
 
 # Paul
-```{r}
 
+The remaining sections (Introduction, Questions, ggplot calls, and Learning more) are narrative in nature. We include their summaries here for completeness, to retain a simple reference, and for the equal division of group work.
+
+(7.1) A note on Exploratory Data Analysis (EDA): EDA is a state of mind, feel free to explore all of the ideas that come to you whether they pan out or not. Scrubbing is just one important part, ensuring the data is in the right form for your analysis--using visualization, transformation, and modeling.
+
+EDA workflow: question %>% visualize, transform, model %>% refine your questions and generate new ones.
+
+We'll be using dplyr and ggplot2 in the tidyverse.
+```{r}
+library(tidyverse)
 ```
+
+(7.2) Creatively understand your data. Generate many questions and select the right one. In Lean Six Sigma, we call this process, the 5 W's. Continue to ask an additional question based on the answer to your last question, until you reach the 5th, at which point you can begin to make relevant discoveries. Here the questions are about variation, and covariation. (Know these terms: variable, value, observation, Tabular data, tidy tabular is when cell = value, column = variable, row = observation).
+
+(7.7) A concise expression of ggplot2 code will be used going forward.
+
+Old form:
+ggplot(data = turnaround, mapping = aes(x = turn3, y = brighteyes)) + 
+  geom_barplot(binwidth = 0.25)
+  
+New form:
+ggplot(turnaround, aes(turn3, brighteyes)) + 
+  geom_barplot(binwidth = 0.25)
+
+A reminder on adding a ggplot to the end of a pipeline:
+diamonds %>% 
+  count(are, fornever) %>% 
+  ggplot(aes(fornever, are, fill = n)) + # note the move to + after ggplot starts--at least until ggvis is released!
+    geom_tile()
+    
+(7.8)
+R for graphics cookbook (updated by Winston Change 2025-05-15)
+https://r-graphics.org/
+
+ggplot2 book: 3rd edition
+https://ggplot2-book.org/
+
+Springer link
+https://link.springer.com/book/10.1007/978-3-319-24277-4
+
+
 
 
 # Matthew
+
+library(ggplot2)
 ```{r}
+ggplot(diamonds, aes(x = y)) + 
+  geom_histogram(binwidth = 0.5)
+
+# while the graph as is shows the general distribution and trends as a whole, but the far right tail values are essentially illegible
+# due to their small value overall. Adding in cood_cartesian() funcion allows you to zoom in on this specific difficult to see range.
+# It's also very useful when you want to see a specific range without distorting the overall data and keeping the axis scaling consistent.
+
+ggplot(diamonds, aes(x = y)) + 
+  geom_histogram(binwidth = 0.5) +
+  coord_cartesian(ylim = c(0, 50))
+
+# Here you can see it is used to zoom in on the bars that have less than 50, without removing the other bars.
+# Ideally you will want to use this to view a specific subset of data among a larger dataset that is difficult to visualize within the base graphic
 
 ```
 
 
-# Miles
-```{r}
+# 7.4 - Missing Values 
+## Miles
+Frequently you will encounter wonky or erroneous values in your dataset. There are two things you can do to handle them. The first is to drop the whole row of data: 
+
+```{r drop entire row}
+diamonds2 <- diamonds %>% 
+  filter(between(y, 3, 20))
+```
+
+This usually isn't recommended, unless there is reason to believe one invalid measurement is evidence of other invalid measurements.
+
+The other option is to replace the individual problem values with NAs. This is most easily done using mutate() and ifelse():
+
+```{r replace missing value}
+diamonds2 <- diamonds %>% 
+  mutate(y = ifelse(y < 3 | y > 20, NA, y))
 
 ```
 
+The three arguments of ifelse() are 1. the logical condition, 2. the value when the condition is true, and 3. the value when the condition is false. For more complex combinations of existing variables, case_when() is a better option. For example, I used it to create bins of years when I was plotting the baseball data in Assignments 1 and 2:
+
+```{r case_when() example}
+#install.packages("Lahman")
+library(Lahman)
+
+# Binning years 
+battingYearBin <- Batting %>% 
+  mutate(year_bin = case_when(
+    yearID >= 1986 & yearID < 1991 ~ "86-90",
+    yearID >= 1991 & yearID < 1996 ~ "91-95",
+    yearID >= 1996 & yearID < 2001 ~ "96-00",
+    yearID >= 2001 & yearID < 2006 ~ "01-05",
+    yearID >= 2006 & yearID < 2011 ~ "06-10",
+    yearID >= 2011 & yearID < 2016 ~ "11-15"
+  )) %>% 
+  filter(!is.na(year_bin))
+
+```
+
+ggplot2 doesn't include missing values in plots, but will give a warning that they were excluded. This warning can be suppressed with na.rm = TRUE:
+
+```{r ggplot2 missing values}
+ggplot(data = diamonds2, mapping = aes(x = x, y = y)) + 
+  geom_point()
+```
+
+In some cases, the absence of data may still be encoding something. In nycflights13::flights, NAs in the dep_time variable mean a flight was cancelled. You could use is.na() to build a new variable to compare cancellations at different times. Note, that the include plot is good at comparing number of non-cancelled to cancelled flights, but not understanding the dynamics of just cancelled flights
+
+```{r cancelled flights}
+nycflights13::flights %>% 
+  mutate(
+    cancelled = is.na(dep_time),
+    sched_hour = sched_dep_time %/% 100,
+    sched_min = sched_dep_time %% 100,
+    sched_dep_time = sched_hour + sched_min / 60
+  ) %>% 
+  ggplot(mapping = aes(sched_dep_time)) + 
+    geom_freqpoly(mapping = aes(colour = cancelled), binwidth = 1/4)
+
+```
 
 # John
 ```{r}
