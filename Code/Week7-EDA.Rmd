@@ -35,7 +35,29 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # John
 ```{r}
+library(tidyverse)
+# Covariation is when two or more variables have similar variations. It describes behavior between two or more variables. 
+# It is important to recognize covariation between variables while performing EDA in order to explore the relationships between the variables, and identify trends and patterns. 
+# The way you can recognize covariation is by plotting the relationship between these variables. This can be done between a continuous and categorical variable, two continuous variables, or two categorical variables.
 
+# For a categorical and continuous variable, the best way to display covariation is through plotting boxplots. In the graph below, you can see that the diamonds that are "fair" in quality actually have the highest price, and the best quality diamonds are less expensive.
+
+ggplot(data = diamonds, mapping = aes(x = cut, y = price)) +
+  geom_boxplot()
+```
+```{r}
+# For two categorical variables, you have to count the observations between the two variables, and plot the counts. 
+
+ggplot(data = diamonds) +
+  geom_count(mapping = aes(x = cut, y = color))
+```
+```{r}
+# And for two continuous variables, a scatterplot or bin plot will show you the relationships between the variables.
+
+ggplot(data = diamonds) +
+  geom_bin2d(mapping = aes(x = carat, y = price))
+
+# All of these techniques help you visualize the relationships between variables, and help in identifying covariation.
 ```
 
 
