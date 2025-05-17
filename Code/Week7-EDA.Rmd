@@ -71,7 +71,7 @@ kefir.raw |>
              y = Weight_g))+
   geom_point()
 ```
-The scatterplot here is a helpful begining graph as a pattern can be seen here, without adding comnplexity of additional variables. This graph shows the mass of the grains increasing over time. This is to be expected. However, it does show that as the number of passages is increasing, there is a certain divergence and increase in variability. When we add the fact that some of the milk wasn't bovine based, but there was coconut milk and coconut milk with 5% lactose (a similar lactose content to whole cow's milk).
+The scatterplot here is a helpful beginning graph as a pattern can be seen here, without adding comnplexity of additional variables. This graph shows the mass of the grains increasing over time. This is to be expected. However, it does show that as the number of passages is increasing, there is a certain divergence and increase in variability. When we add the fact that some of the milk wasn't bovine based, but there was coconut milk and coconut milk with 5% lactose (a similar lactose content to whole cow's milk).
 
 ```{r}
 kefir.milk <- kefir.raw |> 
