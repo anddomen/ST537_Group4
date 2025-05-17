@@ -13,6 +13,7 @@ knit: (function(inputFile, encoding) {
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 ```
 
 # Paul
@@ -65,11 +66,66 @@ https://link.springer.com/book/10.1007/978-3-319-24277-4
 ```
 
 
-# Miles
-```{r}
+# 7.4 - Missing Values 
+## Miles
+Frequently you will encounter wonky or erroneous values in your dataset. There are two things you can do to handle them. The first is to drop the whole row of data: 
+
+```{r drop entire row}
+diamonds2 <- diamonds %>% 
+  filter(between(y, 3, 20))
+```
+
+This usually isn't recommended, unless there is reason to believe one invalid measurement is evidence of other invalid measurements.
+
+The other option is to replace the individual problem values with NAs. This is most easily done using mutate() and ifelse():
+
+```{r replace missing value}
+diamonds2 <- diamonds %>% 
+  mutate(y = ifelse(y < 3 | y > 20, NA, y))
 
 ```
 
+The three arguments of ifelse() are 1. the logical condition, 2. the value when the condition is true, and 3. the value when the condition is false. For more complex combinations of existing variables, case_when() is a better option. For example, I used it to create bins of years when I was plotting the baseball data in Assignments 1 and 2:
+
+```{r case_when() example}
+#install.packages("Lahman")
+library(Lahman)
+
+# Binning years 
+battingYearBin <- Batting %>% 
+  mutate(year_bin = case_when(
+    yearID >= 1986 & yearID < 1991 ~ "86-90",
+    yearID >= 1991 & yearID < 1996 ~ "91-95",
+    yearID >= 1996 & yearID < 2001 ~ "96-00",
+    yearID >= 2001 & yearID < 2006 ~ "01-05",
+    yearID >= 2006 & yearID < 2011 ~ "06-10",
+    yearID >= 2011 & yearID < 2016 ~ "11-15"
+  )) %>% 
+  filter(!is.na(year_bin))
+
+```
+
+ggplot2 doesn't include missing values in plots, but will give a warning that they were excluded. This warning can be suppressed with na.rm = TRUE:
+
+```{r ggplot2 missing values}
+ggplot(data = diamonds2, mapping = aes(x = x, y = y)) + 
+  geom_point()
+```
+
+In some cases, the absence of data may still be encoding something. In nycflights13::flights, NAs in the dep_time variable mean a flight was cancelled. You could use is.na() to build a new variable to compare cancellations at different times. Note, that the include plot is good at comparing number of non-cancelled to cancelled flights, but not understanding the dynamics of just cancelled flights
+
+```{r cancelled flights}
+nycflights13::flights %>% 
+  mutate(
+    cancelled = is.na(dep_time),
+    sched_hour = sched_dep_time %/% 100,
+    sched_min = sched_dep_time %% 100,
+    sched_dep_time = sched_hour + sched_min / 60
+  ) %>% 
+  ggplot(mapping = aes(sched_dep_time)) + 
+    geom_freqpoly(mapping = aes(colour = cancelled), binwidth = 1/4)
+
+```
 
 # John
 ```{r}
